@@ -28,7 +28,7 @@
       script.parentNode.removeChild(script);
     },
 
-    setRevisionNumberForAuthorvizBtn: function(num) {
+    setRevisionNumberToAuthorvizBtn: function(num) {
       $('.js-revision-number').text(num);
     },
 
@@ -54,14 +54,14 @@
       var that = this;
 
       $.ajax({
-        type: "GET",
+        type: 'GET',
         url: this.getHistoryUrl(),
         dataType: 'html',
         success: function(data) {
           var raw = jQuery.parseJSON(data.substring(4)),
               revisionNumber = raw[raw.length-1][raw[raw.length-1].length-1][3];
 
-          that.setRevisionNumberForAuthorvizBtn(revisionNumber);
+          that.setRevisionNumberToAuthorvizBtn(revisionNumber);
 
           that.authors = that.getAuthor(raw[2]);
         }
@@ -94,7 +94,7 @@
       var that = this;
 
       $.ajax({
-        type: "get",
+        type: 'GET',
         url: this.getChangelogUrl(),
         dataType: 'html',
 
@@ -102,8 +102,17 @@
           var raw = jQuery.parseJSON(data.substring(4));
           // Send Changelog data to Model
           chrome.runtime.sendMessage({msg: 'changelog', docId: that.getDocId(), changelog: raw.changelog, authors: that.authors}, function(data) {});
+        },
+        error: function(error) {
+          console.log(error.status);
         }
       });
+
+    },
+
+    addListenerToAuthorvizBtn: function() {
+      var that = this;
+      $(document).on('click', '.js-authorviz', function() { that.getChangelog(); });
     },
 
     renderAuthorvizBtn: function() {
@@ -120,16 +129,10 @@
       console.log(soFar + " / " + this.getRevisionNumber());
     },
 
-    renderResult: function(html) {
+    renderResultPanel: function(html) {
       var panel = '<div class="js-result l-fullscreen"></div>';
       $('body').append(panel);
       $('.js-result').append(html);
-      console.log(html);
-    },
-
-    addListenerToAuthorvizBtn: function() {
-      var that = this;
-      $(document).on('click', '.js-authorviz', function() { that.getChangelog(); });
     }
 
   });
@@ -153,8 +156,8 @@
           break;
 
         case 'render':
-          authorviz.renderResult(request.html);
-          sendResponse('done');
+          authorviz.renderResultPanel(request.html);
+          sendResponse('end');
           break;
 
         default:

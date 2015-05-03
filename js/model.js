@@ -32,7 +32,8 @@
       },'');
     },
 
-    process: function(entry, authorId) {
+
+    construct: function(entry, authorId) {
       var that = this,
           type = entry.ty,
           insertStartIndex = null,
@@ -41,7 +42,7 @@
 
       if(type === 'mlti') {
         _.each(entry.mts, function(ent) {
-          that.process(ent, authorId);
+          that.construct(ent, authorId);
         });
 
       } else if(type === 'is') {
@@ -52,7 +53,8 @@
           var charObj = {
             s: character,
             aid: authorId
-          }
+          };
+
           that.str.insert(charObj, (insertStartIndex - 1) + index);
         });
 
@@ -64,15 +66,20 @@
       }
     },
 
+
     buildRevisions: function(docId, changelog, authors) {
+      // Clear previous revision data
+      this.str = [];
+
       var that = this,
           soFar = 0,
-          revisionNumber = changelog.length;
+          revisionNumber = changelog.length,
+          html = '';
 
       async.eachSeries(changelog, function(entry, callBack) {
         var authorId = entry[2],
-            entry = entry[0],
-            html = "";
+            entry = entry[0];
+
 
         chrome.tabs.query({url: '*://docs.google.com/*/' + docId + '/edit'}, function(tabs) {
           chrome.tabs.sendMessage(tabs[0].id, {msg: 'progress', soFar: soFar + 1}, function(response) {
@@ -81,24 +88,22 @@
             soFar += 1;
 
 
-            // Progress bar reaches 100%, do something
+            // When Progress Bar reaches 100%, do something
             if(soFar === revisionNumber) {
               html = that.render(that.str, authors);
 
               chrome.tabs.query({url: '*://docs.google.com/*/' + docId + '/edit'}, function(tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, {msg: 'render', html: html}, function(response) {});
+                chrome.tabs.sendMessage(tabs[0].id, {msg: 'render', html: html}, function(response) {console.log(response);});
               });
             }
 
-            that.process(entry, authorId);
+            that.construct(entry, authorId);
             callBack();
           });
+
         });
       });
-
     }
-
-
   });
 
 
