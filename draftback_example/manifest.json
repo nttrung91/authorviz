@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+
+  "name": "Draftback Test",
+  "version": "1.0",
+  "description": "Visualize your Revision History",
+  "background": {
+    "scripts": ["jquery.js","async.js","background.js"]
+  },
+  "content_scripts":[{
+    "matches" : ["*://docs.google.com/*"],
+    "js": ["jquery.js", "jquery.scrollTo.min.js", "moment.js", "draftback.js"]
+  }],
+  "permissions": [
+    "webRequest",
+    "tabs",
+    "activeTab",
+    "*://docs.google.com/*",
+    "unlimitedStorage"
+  ]
+}
