@@ -17,6 +17,7 @@
       this.getRevisionData();
     },
 
+
     // Set Token on Body Tag
     setToken: function() {
       var code = function() {
@@ -28,18 +29,22 @@
       script.parentNode.removeChild(script);
     },
 
+
     setRevisionNumberToAuthorvizBtn: function(num) {
       $('.js-revision-number').text(num);
     },
+
 
     getDocId: function() {
       var regexMatch = location.href.match("((https?:\/\/)?docs\.google\.com\/(.*?\/)*document\/d\/(.*?))\/edit");
       return regexMatch[4];
     },
 
+
     getToken: function() {
       return $('body').attr('tok');
     },
+
 
     getHistoryUrl: function() {
       var token = this.getToken(),
@@ -49,6 +54,7 @@
 
       return historyUrl;
     },
+
 
     getRevisionData: function() {
       var that = this;
@@ -68,6 +74,7 @@
       })
     },
 
+
     getAuthor: function(arr) {
       var authors = _.union(_.compact(_.flatten(_.map(arr, function(val) {
         return val[1];
@@ -76,9 +83,16 @@
       return authors;
     },
 
+
+    getDocTitle: function() {
+      return $('#docs-title-inner').text();
+    },
+
+
     getRevisionNumber: function() {
       return $('.js-revision-number').text();
     },
+
 
     // Construct an URL to retrieve Changelog Data
     getChangelogUrl: function() {
@@ -88,6 +102,7 @@
 
       return loadUrl;
     },
+
 
     // Retrieve Changelog data and send it to Model
     getChangelog: function() {
@@ -110,26 +125,36 @@
 
     },
 
+
     addListenerToAuthorvizBtn: function() {
       var that = this;
-      $(document).on('click', '.js-authorviz', function() { that.getChangelog(); });
+      $(document).on('click', '.js-authorviz', function(e) {
+        that.getChangelog();
+
+        // Remove 'click' event once the authorviz btn is clicked
+        $(document).off('click', '.js-authorviz');
+      });
     },
+
 
     renderAuthorvizBtn: function() {
       var btnGroup = $('#docs-titlebar-share-client-button').prev();
 
       // js-authorviz: feature btn
       // js-revision-number: revision number
-      $('<div class="goog-inline-block js-authorviz"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Open comments thread (⌘+Option+Shift+A)" aria-label="Open comments thread (shortcut ⌘+Option+Shift+A.)" value="undefined" style="-webkit-user-select: none;">Visualize Rev(<span class="js-revision-number">?</span> revs)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
+      $('<div class="goog-inline-block js-authorviz"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Visualize Document" aria-label="Visualize Document" value="undefined" style="-webkit-user-select: none;">Visualize Document(<span class="js-revision-number">?</span> revs)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
 
       this.addListenerToAuthorvizBtn();
     },
+
 
     renderProgressBar: function(soFar) {
       console.log(soFar + " / " + this.getRevisionNumber());
     },
 
+
     renderResultPanel: function(html) {
+      console.log(this.getDocTitle());
       var panel = '<div class="js-result l-fullscreen"></div>';
       $('body').append(panel);
       $('.js-result').append(html);
