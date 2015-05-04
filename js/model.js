@@ -64,6 +64,8 @@
 
         this.str.delete(deleteStartIndex - 1, deleteEndIndex - 1);
       }
+
+      return true;
     },
 
 
@@ -74,12 +76,14 @@
       var that = this,
           soFar = 0,
           revisionNumber = changelog.length,
-          html = '';
+          html = '',
+          entry = null,
+          authorId = null;
 
 
-      async.eachSeries(changelog, function(entry, callBack) {
-        var authorId = entry[2],
-            entry = entry[0];
+      async.eachSeries(changelog, function(entries, callBack) {
+        authorId = entries[2],
+        entry = entries[0];
 
 
         chrome.tabs.query({url: '*://docs.google.com/*/' + docId + '/edit'}, function(tabs) {
@@ -87,6 +91,9 @@
 
             // Update progress bar
             soFar += 1;
+
+            that.construct(entry, authorId);
+            callBack();
 
 
             // When Progress Bar reaches 100%, do something
@@ -97,9 +104,6 @@
                 chrome.tabs.sendMessage(tabs[0].id, {msg: 'render', html: html}, function(response) {console.log(response);});
               });
             }
-
-            that.construct(entry, authorId);
-            callBack();
           });
 
         });

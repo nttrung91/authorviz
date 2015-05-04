@@ -10,6 +10,7 @@
   // Add new properties to existing properties
   $.extend(authorviz, {
     authors: [],
+    loaded: false,
 
     init: function() {
       this.renderAuthorvizBtn();
@@ -144,27 +145,15 @@
 
     addListenerToAuthorvizBtn: function() {
       var that = this;
-      $(document).on('click', '.js-authorviz-btn', function(e) {
+      $(document).on('click', '.js-authorviz-btn', function() {
         // Show App
         $('.js-authorviz').removeClass('hideVisually');
-
         that.getChangelog();
 
-        // Remove 'click' event once the authorviz btn is clicked
         $(document).off('click', '.js-authorviz-btn');
       });
     },
 
-
-    renderAuthorvizBtn: function() {
-      var btnGroup = $('#docs-titlebar-share-client-button').prev();
-
-      // js-authorviz: feature btn
-      // js-revision-number: revision number
-      $('<div class="goog-inline-block js-authorviz-btn"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Visualize Document" aria-label="Visualize Document" value="undefined" style="-webkit-user-select: none;">Visualize Document(<span class="js-revision-number">?</span> revs)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
-
-      this.addListenerToAuthorvizBtn();
-    },
 
     renderApp: function() {
       // js-authorviz: Authoviz App
@@ -185,16 +174,30 @@
     },
 
 
+    renderAuthorvizBtn: function() {
+      var btnGroup = $('#docs-titlebar-share-client-button').prev();
+
+      // js-authorviz: feature btn
+      // js-revision-number: revision number
+      $('<div class="goog-inline-block js-authorviz-btn"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Visualize Document" aria-label="Visualize Document" value="undefined" style="-webkit-user-select: none;">Visualize Document(<span class="js-revision-number">?</span> revs)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
+
+      this.addListenerToAuthorvizBtn();
+    },
+
+
     renderProgressBar: function(soFar) {
+      if(this.loaded) {
+        return;
+      }
+
       var outOf = this.getRevisionNumber(),
           soFar = (soFar / outOf) * 100;
-
-      console.log('soFar ' + soFar);
 
       $('.js-progress-so-far').css("width", soFar + '%');
 
       // When progress bar is fully loaded, do something
       if(soFar === 100) {
+        this.loaded = true;
         this.renderCloseBtn();
         $('.js-progress-bar').addClass('hideVisually');
         $('.js-author').html(this.renderAuthorName());
@@ -222,13 +225,12 @@
       $('.js-left-panel').append(html);
 
       $(document).on('click', '.js-close', function() {
-        $('.js-authorviz').
-        add('.js-author').
-        addClass('hideVisually');
+        $('.js-authorviz').addClass('hideVisually');
 
-        $('.js-progress-bar').removeClass('hideVisually');
-
-        that.addListenerToAuthorvizBtn();
+        $(document).on('click','.js-authorviz-btn', function() {
+          // Show App
+          $('.js-authorviz').removeClass('hideVisually');
+        });
       });
     },
 
