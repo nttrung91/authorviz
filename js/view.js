@@ -13,6 +13,7 @@
 
     init: function() {
       this.renderAuthorvizBtn();
+      this.renderApp();
       this.setToken();
       this.getRevisionData();
     },
@@ -142,21 +143,53 @@
 
       // js-authorviz: feature btn
       // js-revision-number: revision number
-      $('<div class="goog-inline-block js-authorviz"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Visualize Document" aria-label="Visualize Document" value="undefined" style="-webkit-user-select: none;">Visualize Document(<span class="js-revision-number">?</span> revs)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
+      $('<div class="goog-inline-block js-authorviz-btn"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Visualize Document" aria-label="Visualize Document" value="undefined" style="-webkit-user-select: none;">Visualize Document(<span class="js-revision-number">?</span> revs)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
 
       this.addListenerToAuthorvizBtn();
     },
 
+    renderApp: function() {
+      // js-authorviz: Authoviz App
+      // js-progress-bar: Progress Bar
+      // js-progress-so-far: Updated part of Progress Bar
+      // js-doc-title: Document's title
+      // js-author: The author section
+      // js-result: The result panel
+
+      var html = '<div class="authorviz js-authorviz"><div class="authorviz__layout"><div class="l-half l-half--left authorviz__wrap--left"><div class="aligner txt-c" style="height: 100%"><div class="aligner-item authorviz__intro"><div class="aligner-item aligner-item-top"><h3 class="authorivz__doc-title js-doc-title">Final Paper</h3></div><div class="aligner-item"><div class="authorviz__progress-bar js-progress-bar"><div class="authorviz__progress-bar-item js-progress-so-far"></div></div><div class="js-author"></div></div></div></div></div><div class="l-half l-half--right authorviz__wrap--right"><div class="authoviz__box js-result"></div></div></div></div>';
+
+      $('body').append(html);
+
+      // Update Document Title
+      $('.js-doc-title').text(this.getDocTitle());
+
+    },
+
 
     renderProgressBar: function(soFar) {
-      console.log(soFar + " / " + this.getRevisionNumber());
+      var outOf = this.getRevisionNumber(),
+          soFar = (soFar / outOf) * 100;
+
+      $('.js-progress-so-far').width(soFar + '%');
+
+      // When progress bar is fully loaded, do something
+      if(soFar === 100) {
+        $('.js-progress-bar').addClass('hideVisually');
+        $('.js-author').append(this.renderAuthorName());
+      }
+    },
+
+
+    renderAuthorName: function() {
+      var html = _.reduce(this.authors, function(memo, obj) {
+                  return memo + '<span style="color:' + '#2BB3B2' + '">' + 'Trung Nguyen' + '</span>'
+                },'By ');
+
+      return html;
     },
 
 
     renderResultPanel: function(html) {
-      console.log(this.getDocTitle());
-      var panel = '<div class="js-result l-fullscreen"></div>';
-      $('body').append(panel);
       $('.js-result').append(html);
     }
 
