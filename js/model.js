@@ -21,12 +21,12 @@
 
     render: function(chars, authors) {
       return _.reduce(chars, function(memo, obj) {
+        var author = _.where(authors, {id: obj.aid});
 
-        var colorIndex = _.indexOf(authors, obj.aid) - 1;
         if(obj.s === "\n") {
           return memo + "<br>";
         } else {
-          return memo + '<span style="color:' + authors[colorIndex] + '">' + obj.s + '</span>';
+          return memo + '<span style="color:' + author[0]['color'] + '">' + obj.s + '</span>';
         }
 
       },'');
@@ -75,6 +75,7 @@
           soFar = 0,
           revisionNumber = changelog.length,
           html = '';
+
 
       async.eachSeries(changelog, function(entry, callBack) {
         var authorId = entry[2],

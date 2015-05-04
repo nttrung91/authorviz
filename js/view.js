@@ -77,9 +77,25 @@
 
 
     getAuthor: function(arr) {
-      var authors = _.union(_.compact(_.flatten(_.map(arr, function(val) {
-        return val[1];
-      }))));
+      var rawAuthorData,
+          i,
+          authors = [];
+
+      var Author = function(name, color, id) {
+        return {
+          name: name,
+          color: color,
+          id: id
+        };
+      };
+
+      rawAuthorData = _.union(_.compact(_.flatten(_.map(arr, function(val) {
+                      return val[1];
+                    }))));
+
+      for(i = 0; i < rawAuthorData.length; i+=3) {
+        authors.push(Author(rawAuthorData[i], rawAuthorData[i+1], rawAuthorData[i+2]));
+      }
 
       return authors;
     },
@@ -123,17 +139,19 @@
           console.log(error.status);
         }
       });
-
     },
 
 
     addListenerToAuthorvizBtn: function() {
       var that = this;
-      $(document).on('click', '.js-authorviz', function(e) {
+      $(document).on('click', '.js-authorviz-btn', function(e) {
+        // Show App
+        $('.js-authorviz').removeClass('hideVisually');
+
         that.getChangelog();
 
         // Remove 'click' event once the authorviz btn is clicked
-        $(document).off('click', '.js-authorviz');
+        $(document).off('click', '.js-authorviz-btn');
       });
     },
 
@@ -155,8 +173,9 @@
       // js-doc-title: Document's title
       // js-author: The author section
       // js-result: The result panel
+      // js-left-panel: Left Panel
 
-      var html = '<div class="authorviz js-authorviz"><div class="authorviz__layout"><div class="l-half l-half--left authorviz__wrap--left"><div class="aligner txt-c" style="height: 100%"><div class="aligner-item authorviz__intro"><div class="aligner-item aligner-item-top"><h3 class="authorivz__doc-title js-doc-title">Final Paper</h3></div><div class="aligner-item"><div class="authorviz__progress-bar js-progress-bar"><div class="authorviz__progress-bar-item js-progress-so-far"></div></div><div class="js-author"></div></div></div></div></div><div class="l-half l-half--right authorviz__wrap--right"><div class="authoviz__box js-result"></div></div></div></div>';
+      var html = '<div class="authorviz js-authorviz hideVisually"><div class="authorviz__layout"><div class="l-half l-half--left authorviz__wrap--left"><div class="aligner txt-c js-left-panel" style="height: 100%"><div class="aligner-item authorviz__intro"><div class="aligner-item aligner-item-top"><h3 class="authorivz__doc-title js-doc-title">Final Paper</h3></div><div class="aligner-item"><div class="authorviz__progress-bar js-progress-bar"><div class="authorviz__progress-bar-item js-progress-so-far"></div></div><div class="js-author authorviz__author"></div></div></div></div></div><div class="l-half l-half--right authorviz__wrap--right"><div class="authoviz__box js-result"></div></div></div></div>';
 
       $('body').append(html);
 
@@ -170,27 +189,52 @@
       var outOf = this.getRevisionNumber(),
           soFar = (soFar / outOf) * 100;
 
-      $('.js-progress-so-far').width(soFar + '%');
+      console.log('soFar ' + soFar);
+
+      $('.js-progress-so-far').css("width", soFar + '%');
 
       // When progress bar is fully loaded, do something
       if(soFar === 100) {
+        this.renderCloseBtn();
         $('.js-progress-bar').addClass('hideVisually');
-        $('.js-author').append(this.renderAuthorName());
+        $('.js-author').html(this.renderAuthorName());
       }
     },
 
 
     renderAuthorName: function() {
-      var html = _.reduce(this.authors, function(memo, obj) {
-                  return memo + '<span style="color:' + '#2BB3B2' + '">' + 'Trung Nguyen' + '</span>'
-                },'By ');
+      var html = _.reduce(this.authors, function(memo, author, index, list) {
+        if(index === list.length - 1) {
+          return memo + '<span style="color:' + author.color + '">' + author.name + '</span>'
+        }
+
+        return memo + '<span style="color:' + author.color + '">' + author.name + ', </span>'
+      },'');
 
       return html;
     },
 
 
+    renderCloseBtn: function() {
+      var html = '<button class="btn btn-primary js-close authorviz__close-btn">Close</button>',
+          that = this;
+
+      $('.js-left-panel').append(html);
+
+      $(document).on('click', '.js-close', function() {
+        $('.js-authorviz').
+        add('.js-author').
+        addClass('hideVisually');
+
+        $('.js-progress-bar').removeClass('hideVisually');
+
+        that.addListenerToAuthorvizBtn();
+      });
+    },
+
+
     renderResultPanel: function(html) {
-      $('.js-result').append(html);
+      $('.js-result').html(html);
     }
 
   });
