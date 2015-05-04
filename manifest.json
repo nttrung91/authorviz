@@ -8,14 +8,15 @@
     "scripts": ["js/lib/underscore.js", "js/lib/jquery.min.js","js/lib/async.js","js/model.js"]
   },
   "content_scripts":[{
-    "matches" : ["*://docs.google.com/*/*/edit"],
+    "matches" : ["*://docs.google.com/*"],
     "css": ["css/global.css"],
     "js": ["js/lib/underscore.js", "js/lib/jquery.min.js","js/view.js"]
   }],
   "permissions": [
+    "webRequest",
     "tabs",
     "activeTab",
-    "*://docs.google.com/*/*"
+    "*://docs.google.com/*"
   ],
   "web_accessible_resources": [
       "css/global.css",

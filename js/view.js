@@ -165,7 +165,7 @@
 
       var html = '<div class="authorviz js-authorviz hideVisually"><div class="authorviz__layout"><div class="l-half l-half--left authorviz__wrap--left"><div class="aligner txt-c js-left-panel" style="height: 100%"><div class="aligner-item authorviz__intro"><div class="aligner-item aligner-item-top"><h3 class="authorivz__doc-title js-doc-title">Final Paper</h3></div><div class="aligner-item"><div class="authorviz__progress-bar js-progress-bar"><div class="authorviz__progress-bar-item js-progress-so-far"></div></div><div class="js-author authorviz__author"></div></div></div></div></div><div class="l-half l-half--right authorviz__wrap--right"><div class="authoviz__box js-result"></div></div></div></div>';
 
-      $('body').append(html);
+      $('body').prepend(html);
 
       this.renderAuthorvizBtn();
 
