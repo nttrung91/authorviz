@@ -46,7 +46,7 @@ html, body {
   top: 0;
   height: 100%;
   width: 50%;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .l-half--left {
@@ -134,9 +134,16 @@ html, body {
 
 /* Component */
 .authorviz {
-  position: relative;
-  z-index: 1000000;
+  position: fixed;
+  z-index: 5000;
 }
+
+
+.authorviz__layout {
+  position: fixed
+  z-index: 5000;
+}
+
 
 .authorviz__wrap--left {
   background: rgba(32,38,47,0.95);
