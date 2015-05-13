@@ -184,6 +184,14 @@ html, body {
 }
 
 
+.authorviz__print-btn {
+  position: absolute;
+  top: 30px;
+  right: 140px;
+}
+
+
+
 /* Progress Bar */
 .authorviz__progress-bar {
   position: relative;

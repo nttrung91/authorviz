@@ -206,6 +206,7 @@
       if(progressSoFar === 100) {
         this.loaded = true;
         this.renderCloseBtn();
+        this.renderPrintBtn();
         $('.js-progress-bar').addClass('hideVisually');
         $('.js-author').html(this.renderAuthorName());
       }
@@ -238,6 +239,24 @@
           // Show App
           $('.js-authorviz').removeClass('hideVisually');
         });
+      });
+    },
+
+
+    renderPrintBtn: function() {
+      var html = '<button class="btn btn-primary js-print authorviz__print-btn">Print</button>',
+          that = this;
+
+      $('.js-left-panel').append(html);
+
+      $(document).on('click', '.js-print', function() {
+          var printContent = $('.js-result');
+          var printWindow = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
+          printWindow.document.write(printContent.html());
+          printWindow.document.close();
+          printWindow.focus();
+          printWindow.print();
+          printWindow.close();
       });
     },
 
