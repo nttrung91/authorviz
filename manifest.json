@@ -10,13 +10,14 @@
   "content_scripts":[{
     "matches" : ["*://docs.google.com/*"],
     "css": ["css/global.css"],
-    "js": ["js/lib/underscore.js", "js/lib/jquery.min.js","js/view.js"]
+    "js": ["js/lib/underscore.js", "js/lib/jquery.min.js","js/view.js","js/lib/google-analytic.js"]
   }],
   "permissions": [
     "webRequest",
     "tabs",
     "activeTab",
-    "*://docs.google.com/*"
+    "*://docs.google.com/*",
+    "https://www.google-analytics.com/"
   ],
   "web_accessible_resources": [
       "css/global.css",

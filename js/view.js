@@ -244,7 +244,7 @@
 
 
     renderPrintBtn: function() {
-      var html = '<button class="btn btn-primary js-print authorviz__print-btn">Print</button>',
+      var html = '<button class="btn btn-primary-alt js-print authorviz__print-btn">Print</button>',
           that = this;
 
       $('.js-left-panel').append(html);
