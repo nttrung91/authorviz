@@ -77,14 +77,13 @@
           soFar = 0,
           revisionNumber = changelog.length,
           html = '',
-          entry = null,
+          command = null,
           authorId = null;
 
 
-      async.eachSeries(changelog, function(entries, callBack) {
-        authorId = entries[2],
-        entry = entries[0];
-
+      async.eachSeries(changelog, function(entry, callBack) {
+        authorId = entry[2],
+        command = entry[0];
 
         chrome.tabs.query({url: '*://docs.google.com/*/' + docId + '/edit'}, function(tabs) {
           chrome.tabs.sendMessage(tabs[0].id, {msg: 'progress', soFar: soFar + 1}, function(response) {
@@ -92,7 +91,7 @@
             // Update progress bar
             soFar += 1;
 
-            that.construct(entry, authorId);
+            that.construct(command, authorId);
             callBack();
 
 

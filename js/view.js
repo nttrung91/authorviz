@@ -31,8 +31,8 @@
     },
 
 
-    setRevisionNumberToAuthorvizBtn: function(num) {
-      $('.js-revision-number').text(num);
+    setRevisionNumber: function(num) {
+      $('.js-revision-number').add('.js-revision-out-of').text(num);
     },
 
 
@@ -51,6 +51,7 @@
       var token = this.getToken(),
           regexMatch = location.href.match("((https?:\/\/)?docs\.google\.com\/(.*?\/)*document\/d\/(.*?))\/edit"),
           http = regexMatch[1],
+          http = http.replace('/d/','/u/1/d/'),
           historyUrl = http + '/revisions/history?id=' + this.getDocId() + "&token=" + token + "&start=1&end=-1&zoom_level=0";
 
       return historyUrl;
@@ -68,7 +69,7 @@
           var raw = jQuery.parseJSON(data.substring(4)),
               revisionNumber = raw[raw.length-1][raw[raw.length-1].length-1][3];
 
-          that.setRevisionNumberToAuthorvizBtn(revisionNumber);
+          that.setRevisionNumber(revisionNumber);
 
           that.authors = that.getAuthor(raw[2]);
         }
@@ -131,6 +132,7 @@
         dataType: 'html',
 
         success: function(data) {
+          console.log(that.authors);
           var raw = jQuery.parseJSON(data.substring(4));
           // Send Changelog data to Model
           chrome.runtime.sendMessage({msg: 'changelog', docId: that.getDocId(), changelog: raw.changelog, authors: that.authors}, function(data) {});
@@ -147,6 +149,7 @@
       $(document).on('click', '.js-authorviz-btn', function() {
         // Show App
         $('.js-authorviz').removeClass('hideVisually');
+
         that.getChangelog();
 
         $(document).off('click', '.js-authorviz-btn');
@@ -158,12 +161,14 @@
       // js-authorviz: Authoviz App
       // js-progress-bar: Progress Bar
       // js-progress-so-far: Updated part of Progress Bar
+      // js-revision-so-far: Revision Number so far
+      // js-revision-out-of: Total number of revisions
       // js-doc-title: Document's title
       // js-author: The author section
       // js-result: The result panel
       // js-left-panel: Left Panel
 
-      var html = '<div class="authorviz js-authorviz hideVisually"><div class="authorviz__layout"><div class="l-half l-half--left authorviz__wrap--left"><div class="aligner txt-c js-left-panel" style="height: 100%"><div class="aligner-item authorviz__intro"><div class="aligner-item aligner-item-top"><h3 class="authorivz__doc-title js-doc-title">Final Paper</h3></div><div class="aligner-item"><div class="authorviz__progress-bar js-progress-bar"><div class="authorviz__progress-bar-item js-progress-so-far"></div></div><div class="js-author authorviz__author"></div></div></div></div></div><div class="l-half l-half--right authorviz__wrap--right"><div class="authoviz__box js-result"></div></div></div></div>';
+      var html = '<div class="authorviz js-authorviz hideVisually"><div class="authorviz__layout"><div class="l-half l-half--left authorviz__wrap--left"><div class="aligner txt-c js-left-panel" style="height: 100%"><div class="aligner-item authorviz__intro"><div class="aligner-item aligner-item-top"><h3 class="authorivz__doc-title js-doc-title">Final Paper</h3><div class="js-author authorviz__author"></div></div><div class="aligner-item js-progress-bar"><div class="authorviz__progress-bar"><div class="authorviz__progress-bar-item js-progress-so-far"></div></div><p class="authorviz__loading-text">Loading <span class="js-revision-so-far">0</span>/<span class="js-revision-out-of">?</span> revisions</p></div></div></div></div><div class="l-half l-half--right authorviz__wrap--right"><div class="authoviz__box js-result"></div></div></div</div>';
 
       $('body').prepend(html);
 
@@ -192,12 +197,13 @@
       }
 
       var outOf = this.getRevisionNumber(),
-          soFar = (soFar / outOf) * 100;
+          progressSoFar = (soFar / outOf) * 100;
 
-      $('.js-progress-so-far').css("width", soFar + '%');
+      $('.js-progress-so-far').css("width", progressSoFar + '%');
+      $('.js-revision-so-far').text(soFar);
 
       // When progress bar is fully loaded, do something
-      if(soFar === 100) {
+      if(progressSoFar === 100) {
         this.loaded = true;
         this.renderCloseBtn();
         $('.js-progress-bar').addClass('hideVisually');

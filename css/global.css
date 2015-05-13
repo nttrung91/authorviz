@@ -149,11 +149,13 @@ html, body {
 
 
 .authoviz__box {
+  position: relative;
   padding: 100px 60px;
   margin: 0 auto;
   max-width: 800px;
   height: 100%;
   overflow: auto;
+  z-index: ;
 }
 
 .authorviz__intro {
@@ -200,3 +202,7 @@ html, body {
       width: 0;
       background: #4BAD7A;
     }
+
+.authorviz__loading-text {
+  color: #999;
+}
