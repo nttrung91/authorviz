@@ -3,10 +3,18 @@
 
   var $ = jQuery.noConflict();
 
+  // "Array.prototype" allows us to add aditional methods to the Array object. Here we add "insert" and "delete" methods
+
+  // "insert" method lets us add an element at any index
+  // e.g.
+  // [a,b,d].insert('c', 2); // [a,b,c,d]
   Array.prototype.insert = function(element, index) {
     this.splice(index, 0, element);
   }
 
+  // "remove" method lets us remove elements within index range
+  // e.g.
+  // [a,b,c,d].remove(0, 2); // [d]
   Array.prototype.delete = function(startIndex, endIndex) {
     return this.splice(startIndex, (endIndex - startIndex) + 1);
   }
@@ -17,8 +25,10 @@
 
   $.extend(authorviz, {
 
+    // "str" stores all the Character objects from a Google Doc
     str: [],
 
+    // Render method construct HTML DOM element from a set of Character and Author Data
     render: function(chars, authors) {
       return _.reduce(chars, function(memo, obj) {
         var author = _.where(authors, {id: obj.aid});
@@ -33,6 +43,7 @@
     },
 
 
+    // Construct method constructs the "str" variable
     construct: function(entry, authorId) {
       var that = this,
           type = entry.ty,
@@ -81,10 +92,12 @@
           authorId = null;
 
 
+      // Async run through each entry in a synchronous sequence.
       async.eachSeries(changelog, function(entry, callBack) {
         authorId = entry[2],
         command = entry[0];
 
+        // Retrieve the Google Doc Tab and send a message to that Tab's view
         chrome.tabs.query({url: '*://docs.google.com/*/' + docId + '/edit'}, function(tabs) {
           chrome.tabs.sendMessage(tabs[0].id, {msg: 'progress', soFar: soFar + 1}, function(response) {
 
@@ -92,6 +105,8 @@
             soFar += 1;
 
             that.construct(command, authorId);
+
+            // Callback lets async knows that the sequence is finished can it can start run another entry
             callBack();
 
 
@@ -114,9 +129,11 @@
 
 
 
+  // Listen to message sent out from the View
   chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       switch(request.msg) {
+        // If the message is 'changelog', run 'buildRevision'
         case 'changelog':
           authorviz.buildRevisions(request.docId, request.changelog, request.authors);
         break;

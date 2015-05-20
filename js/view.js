@@ -1,27 +1,54 @@
+// Authorviz Annotations
+// _____________________________
+//
+// BB: means Black Box. When you see this, it means you don't need to care about what goes inside the methods. It is because the method name is self-explanatory and inside is complex. The methods do what they supposed to do
+
+
+
+
+
 ;(function() {
   'use strict';
 
+  // Reserve the "$" character to only be use as a call to to jQuery
+  // e.g. instead of writing "jQuery.someMethods", you can write "$.someMethods"
   var $ = jQuery.noConflict();
 
   // If authorviz is already exist, use it. Otherwise make a new object
   var authorviz = authorviz || {};
 
 
-  // Add new properties to existing properties
+  // Add new properties to the existing object's properties
   $.extend(authorviz, {
+    // Store each author object in the document
+    // Each author object will have a unique ID, color, and name
     authors: [],
+
+    // Loaded lets us know whether users run Authorviz or not. If they already ran it, "loaded" will be set to "true" and the next time they click on the Authorviz Button again, the app won't load the revisions again and simply display the results since they already loaded the revisions on their first time clicking the Authorviz Button
     loaded: false,
 
+    // Initialize the application
     init: function() {
+      // History URL be use as an URL in an AJAX call later. The ajax call allows us to grab the Total Revision Number and Authors data
+      var historyUrl = null;
+
+      // Render means displaying HTML onto the page. From now on, whenever you see the keyword "render" (e.g. renderButton, renderProgressBar) it means that the methods will inject the HTML code into the page
       this.renderApp();
+
+      // setToken method sets the Google Document's unique token onto the page so that we can retrieve it later for other uses.
+      // The token is required in all Ajax URL from Google Doc
       this.setToken();
 
-      var historyUrl = this.getHistoryUrl(location.href);
-      this.getRevisionData(historyUrl);
+      // getHistoryUrl constructs the history URL
+      historyUrl = this.getHistoryUrl(location.href);
+
+      // This method makes the Ajax call using the History URL. The method will grab Google Doc's History Data. In that data, there are important informations such as Revision Numbers and Authors data
+      this.getHistoryData(historyUrl);
     },
 
 
     // Set Token on Body Tag
+    // ** BB
     setToken: function() {
       var code = function() {
         document.getElementsByTagName('body')[0].setAttribute("tok", _docs_flag_initialData.info_params.token)
@@ -33,22 +60,29 @@
     },
 
 
+    // Set Revision Number to corresponded elements
     setRevisionNumber: function(num) {
       $('.js-revision-number').add('.js-revision-out-of').text(num);
     },
 
 
+    // Get the Google Doc's ID
+    // ** BB
     getDocId: function() {
       var regexMatch = location.href.match("((https?:\/\/)?docs\.google\.com\/(.*?\/)*document\/d\/(.*?))\/edit");
       return regexMatch[4];
     },
 
 
+    // Get the Google Doc's unique Token
+    // The token is required to construct certain Ajax URL
     getToken: function() {
       return $('body').attr('tok');
     },
 
 
+    // Construct History URL to be use in an Ajax call
+    // ** BB
     getHistoryUrl: function(url, switchUrl) {
       var token = this.getToken(),
           regexMatch = url.match("((https?:\/\/)?docs\.google\.com\/(.*?\/)*document\/d\/(.*?))\/edit"),
@@ -65,21 +99,26 @@
     },
 
 
-    getRevisionData: function(url) {
+    // Ajax call to get Google Doc's history data which contains revision number and authors data
+    getHistoryData: function(url) {
       var that = this;
 
       $.ajax({
         type: 'GET',
         url: url,
         dataType: 'html',
+
+        // If the Ajax call failed, make another call using a different url
         error: function(request, error) {
           var historyUrl = null;
 
           if(request.status === 400) {
             historyUrl = that.getHistoryUrl(location.href, true);
-            that.getRevisionData(historyUrl);
+            that.getHistoryData(historyUrl);
           }
         },
+
+        // If the call success, turn the result DATA into JSON object and get the important information (Revision number & authors data)
         success: function(data) {
           var raw = jQuery.parseJSON(data.substring(4)),
               revisionNumber = raw[raw.length-1][raw[raw.length-1].length-1][3];
@@ -87,19 +126,23 @@
           that.setRevisionNumber(revisionNumber);
           $('.js-authorviz-btn').removeClass('is-disabled');
 
-          that.authors = that.getAuthor(raw[2]);
+          that.authors = that.parseAuthors(raw[2]);
         }
       })
     },
 
 
-    getAuthor: function(data) {
+    // parseAuthors method receive "raw authors" data (JSON Object) and maniputlate on that JSON Object to return a set of structural Author Object.
+    // ** BB
+    parseAuthors: function(data) {
       var rawData,
           i,
           rawAuthors = [],
           authors = [],
           authorId = [];
 
+      // Author is a factory that creat "author object" a set of structural property and value.
+      // If you come from Programming language like Java, C, C++, Python, think of this Author as a Class used to create as many author children as needed
       var Author = function(name, color, id) {
         return {
           name: name,
@@ -108,13 +151,29 @@
         };
       };
 
+
+      // _. is a reserved syntax used in Underscore Library
+      // _.map receives input in a form of Array then loop through that Array to return a value based on your definition. The result will also be in a form of an Array
+      // e.g.
+      // _.map([0,1,2,3], function(val) {
+      //    return val + 2;
+      // });
+      // The result of the above function would be
+      // [2,3,4,5]
       rawData = _.map(data, function(val) {
         return val[1];
       });
 
+
+      // _.flatten removes one level of from the Array hierarchy
+      // e.g.
+      // _.flatten([a,b,[c],[[d]]], true);
+      // The result of the above function would be
+      // [a,b,c,[d]]
       rawData = _.flatten(rawData, true);
 
 
+      // _.each loops through the rawData and do something for each value
       _.each(rawData, function(val) {
         //val[2] = Name
         //val[3] = Color
@@ -144,6 +203,7 @@
 
 
     // Construct an URL to retrieve Changelog Data
+    // ** BB
     getChangelogUrl: function() {
       var regmatch = location.href.match(/^(https:\/\/docs\.google\.com.*?\/document\/d\/)/),
           baseUrl = regmatch[1],
@@ -155,6 +215,7 @@
 
     // Retrieve Changelog data and send it to Model
     getChangelog: function(url) {
+      // this stores reference to current object
       var that = this;
 
       $.ajax({
@@ -162,6 +223,7 @@
         url: url,
         dataType: 'html',
 
+        // If the call success, send Changelog Data, Document ID, authors data to Model
         success: function(data) {
           var raw = jQuery.parseJSON(data.substring(4));
           // Send Changelog data to Model
@@ -174,21 +236,29 @@
     },
 
 
+    // Bind Click Event onto the Authorviz Button
     addListenerToAuthorvizBtn: function() {
       var that = this;
+
+      // When the button is click, show the app and disable this button
       $(document).on('click', '.js-authorviz-btn', function() {
         var changelogUrl = null;
 
-        // Show App
+        // Make the App Visible to user
         $('.js-authorviz').removeClass('hideVisually');
 
         changelogUrl = that.getChangelogUrl(location.href);
         that.getChangelog(changelogUrl);
 
+        // Remove the click event from Authorviz button
         $(document).off('click', '.js-authorviz-btn');
       });
     },
 
+
+    // *************************************
+    //   RENDER (Inject HTML in the page)
+    // *************************************
 
     renderApp: function() {
       // js-authorviz: Authoviz App
@@ -225,12 +295,16 @@
 
 
     renderProgressBar: function(soFar) {
+      var outOf,
+          progressSoFar;
+
+      // If users already loaded Revision data, don't need to display the Progress Bar again
       if(this.loaded) {
         return;
       }
 
-      var outOf = this.getRevisionNumber(),
-          progressSoFar = (soFar / outOf) * 100;
+      outOf = this.getRevisionNumber();
+      progressSoFar = (soFar / outOf) * 100;
 
       $('.js-progress-so-far').css("width", progressSoFar + '%');
       $('.js-revision-so-far').text(soFar);
@@ -304,12 +378,15 @@
 
 
 
+  // When Google Doc is finished loading, initialize authorViz app
   authorviz.init();
 
 
 
 
 
+  // These methods are provided by Chrome API
+  // chrome.runtime.onMessage method listen to the Model. Whenever Model wants to send data over to View, this method will activate and listen the call
   chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
       switch(request.msg) {
