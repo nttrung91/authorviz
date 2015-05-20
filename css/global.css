@@ -142,6 +142,15 @@ html, body {
 
 
 
+
+/* Utils */
+.is-disabled {
+  pointer-events:none;
+}
+
+
+
+
 /* Component */
 .authorviz, .authorviz__layout {
   position: fixed;

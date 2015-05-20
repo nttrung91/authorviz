@@ -2,22 +2,21 @@
   "manifest_version": 2,
 
   "name": "Authorviz",
-  "version": "1.0",
-  "description": "Visualize author's contribution in Google Doc",
+  "version": "1.1",
+  "description": "Visualize authors' contribution in a Google Doc",
   "background": {
     "scripts": ["js/lib/underscore.js", "js/lib/jquery.min.js","js/lib/async.js","js/model.js"]
   },
   "content_scripts":[{
     "matches" : ["*://docs.google.com/*"],
     "css": ["css/global.css"],
-    "js": ["js/lib/underscore.js", "js/lib/jquery.min.js","js/view.js","js/lib/google-analytic.js"]
+    "js": ["js/lib/underscore.js", "js/lib/jquery.min.js","js/view.js"]
   }],
   "permissions": [
     "webRequest",
     "tabs",
     "activeTab",
-    "*://docs.google.com/*",
-    "https://www.google-analytics.com/"
+    "*://docs.google.com/*"
   ],
   "web_accessible_resources": [
       "css/global.css",

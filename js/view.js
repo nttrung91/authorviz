@@ -1,4 +1,4 @@
-(function() {
+;(function() {
   'use strict';
 
   var $ = jQuery.noConflict();
@@ -15,7 +15,9 @@
     init: function() {
       this.renderApp();
       this.setToken();
-      this.getRevisionData();
+
+      var historyUrl = this.getHistoryUrl(location.href);
+      this.getRevisionData(historyUrl);
     },
 
 
@@ -47,29 +49,43 @@
     },
 
 
-    getHistoryUrl: function() {
+    getHistoryUrl: function(url, switchUrl) {
       var token = this.getToken(),
-          regexMatch = location.href.match("((https?:\/\/)?docs\.google\.com\/(.*?\/)*document\/d\/(.*?))\/edit"),
+          regexMatch = url.match("((https?:\/\/)?docs\.google\.com\/(.*?\/)*document\/d\/(.*?))\/edit"),
           http = regexMatch[1],
-          http = http.replace('/d/','/u/1/d/'),
+          historyUrl = null;
+
+          if(switchUrl) {
+            http = http.replace('/d/','/u/1/d/');
+          }
+
           historyUrl = http + '/revisions/history?id=' + this.getDocId() + "&token=" + token + "&start=1&end=-1&zoom_level=0";
 
       return historyUrl;
     },
 
 
-    getRevisionData: function() {
+    getRevisionData: function(url) {
       var that = this;
 
       $.ajax({
         type: 'GET',
-        url: this.getHistoryUrl(),
+        url: url,
         dataType: 'html',
+        error: function(request, error) {
+          var historyUrl = null;
+
+          if(request.status === 400) {
+            historyUrl = that.getHistoryUrl(location.href, true);
+            that.getRevisionData(historyUrl);
+          }
+        },
         success: function(data) {
           var raw = jQuery.parseJSON(data.substring(4)),
               revisionNumber = raw[raw.length-1][raw[raw.length-1].length-1][3];
 
           that.setRevisionNumber(revisionNumber);
+          $('.js-authorviz-btn').removeClass('is-disabled');
 
           that.authors = that.getAuthor(raw[2]);
         }
@@ -77,10 +93,12 @@
     },
 
 
-    getAuthor: function(arr) {
-      var rawAuthorData,
+    getAuthor: function(data) {
+      var rawData,
           i,
-          authors = [];
+          rawAuthors = [],
+          authors = [],
+          authorId = [];
 
       var Author = function(name, color, id) {
         return {
@@ -90,13 +108,26 @@
         };
       };
 
-      rawAuthorData = _.union(_.compact(_.flatten(_.map(arr, function(val) {
-                      return val[1];
-                    }))));
+      rawData = _.map(data, function(val) {
+        return val[1];
+      });
 
-      for(i = 0; i < rawAuthorData.length; i+=3) {
-        authors.push(Author(rawAuthorData[i], rawAuthorData[i+1], rawAuthorData[i+2]));
-      }
+      rawData = _.flatten(rawData, true);
+
+
+      _.each(rawData, function(val) {
+        //val[2] = Name
+        //val[3] = Color
+        //val[4] = ID
+        rawAuthors.push(Author(val[2], val[3], val[4]));
+        authorId.push(val[4]);
+      });
+
+      authorId = _.intersection(authorId);
+
+      _.each(authorId, function(val) {
+        authors.push(_.findWhere(rawAuthors, {id: val}));
+      });
 
       return authors;
     },
@@ -123,16 +154,15 @@
 
 
     // Retrieve Changelog data and send it to Model
-    getChangelog: function() {
+    getChangelog: function(url) {
       var that = this;
 
       $.ajax({
         type: 'GET',
-        url: this.getChangelogUrl(),
+        url: url,
         dataType: 'html',
 
         success: function(data) {
-          console.log(that.authors);
           var raw = jQuery.parseJSON(data.substring(4));
           // Send Changelog data to Model
           chrome.runtime.sendMessage({msg: 'changelog', docId: that.getDocId(), changelog: raw.changelog, authors: that.authors}, function(data) {});
@@ -147,10 +177,13 @@
     addListenerToAuthorvizBtn: function() {
       var that = this;
       $(document).on('click', '.js-authorviz-btn', function() {
+        var changelogUrl = null;
+
         // Show App
         $('.js-authorviz').removeClass('hideVisually');
 
-        that.getChangelog();
+        changelogUrl = that.getChangelogUrl(location.href);
+        that.getChangelog(changelogUrl);
 
         $(document).off('click', '.js-authorviz-btn');
       });
@@ -185,7 +218,7 @@
 
       // js-authorviz: feature btn
       // js-revision-number: revision number
-      $('<div class="goog-inline-block js-authorviz-btn"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Visualize Document" aria-label="Visualize Document" value="undefined" style="-webkit-user-select: none;">Visualize Document(<span class="js-revision-number">?</span> revs)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
+      $('<div class="goog-inline-block js-authorviz-btn is-disabled"><div role="button" class="goog-inline-block jfk-button jfk-button-standard docs-titlebar-button jfk-button-clear-outline" aria-disabled="false" aria-pressed="false" tabindex="0" data-tooltip="Visualize Document" aria-label="Visualize Document" value="undefined" style="-webkit-user-select: none;">Visualize Document (<span class="js-revision-number">loading</span> revisions)</div><div id="docs-docos-caret" style="display: none" class="docos-enable-new-header"><div class="docs-docos-caret-outer"></div><div class="docs-docos-caret-inner"></div></div></div>').prependTo(btnGroup);
 
       this.addListenerToAuthorvizBtn();
     },
