@@ -30,17 +30,7 @@
 
     // Render method construct HTML DOM element from a set of Character and Author Data
     render: function(chars, authors) {
-        
-        // Assigns a dark grey color to undefined authors
-        /*
-        for(var i = 0; i < authors.length; i++){
-            if(typeof authors[i]['color'] === 'undefined'){
-            
-               // authors[i]['color'] = '#2D2D2D';
-            }
-            console.log("color: " + authors[i]['color']);
-        }
-      */
+
     return _.reduce(chars, function(memo, obj) {
         var author = _.where(authors, {id: obj.aid});
 

@@ -334,8 +334,7 @@
         }
 
         return memo + '<span style="color:' + author.color + '">' + author.name + ', </span>'
-      }
-                          ,'');
+      },'');
 
       return html;
     },
