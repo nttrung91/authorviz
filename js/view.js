@@ -322,20 +322,12 @@
 
     renderAuthorName: function() {
       var html = _.reduce(this.authors, function(memo, author, index, list) {
-          
-        // Change name if author is Anonymous
-        if(typeof author.name === 'undefined')
-        {
-            author.name = 'Anonymous';
-        }
-            
         if(index === list.length - 1) {
           return memo + '<span style="color:' + author.color + '">' + author.name + '</span>'
         }
 
         return memo + '<span style="color:' + author.color + '">' + author.name + ', </span>'
-      }
-                          ,'');
+      },'');
 
       return html;
     },
