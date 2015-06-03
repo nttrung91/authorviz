@@ -219,8 +219,6 @@ html, body {
   height: 8px;
   margin: 0 auto;
   background: #555;
-  top: 100px;
-  /*border: 2px solid red;*/
 }
 
     .authorviz__progress-bar-item {
