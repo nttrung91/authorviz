@@ -64,19 +64,12 @@
                 deleteEndIndex = null;
 
             if (type === 'mlti') {
-                /*          async.eachSeries(entry.mts, function(ent, callBack){
-            that.construct(ent, authorId);
-              callBack();
-        });*/
+
                 _.each(entry.mts, function(ent) {
                     that.construct(ent, authorId);
                 });
 
             } else if (type === 'rplc') {
-                /*          async.eachSeries(entry.mts, function(ent, callBack){
-            that.construct(ent, authorId);
-              callBack();
-        });*/
                 _.each(entry.snapshot, function(ent) {
                     that.construct(ent, authorId);
                 });
